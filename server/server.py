@@ -22,8 +22,6 @@ class User:
 users = []
 
 
-    
-
 # Define un manejador HTTP personalizado que maneje las solicitudes POST
 class MiHandler(http.server.BaseHTTPRequestHandler):
 
@@ -38,25 +36,26 @@ class MiHandler(http.server.BaseHTTPRequestHandler):
 
         # Decodificar el JSON recibido y retornarlo
         return json.loads(post_data.decode('utf-8'))
-
-    def handleAuthentication(self, isLogin):
-
-        user_data = self.readQueryBody(self.headers)
-
+    
+    def respondToCustomer(self, message):
         # Responder al cliente con un mensaje de exito
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
-        self.wfile.write("Usuario recibido y almacenado correctamente".encode('utf-8'))
+        self.wfile.write(message.encode('utf-8'))
+        
 
+    def handleAuthentication(self, isLogin):
+        user_data = self.readQueryBody(self.headers)
         for user in users:
             if user.name == user_data['name'] and user.password == user_data['password']:
                 user.isOpenSesion = isLogin
+        
+        self.respondToCustomer("Usuario recibido y almacenado correctamente")
 
     def do_POST(self):
         # Verifica si la solicitud es POST
         if self.path == '/register':
-
             user_data = self.readQueryBody(self.headers)
 
             idNewUser = -1
@@ -70,11 +69,7 @@ class MiHandler(http.server.BaseHTTPRequestHandler):
             # Agrega el usuario al arreglo 'users'
             users.append(user)
             
-            # Responder al cliente con un mensaje de exito
-            self.send_response(200)
-            self.send_header('Content-type', 'text/plain')
-            self.end_headers()
-            self.wfile.write("Usuario recibido y almacenado correctamente".encode('utf-8'))
+            self.respondToCustomer("Usuario recibido y almacenado correctamente")
 
             self.imprimirUser()
 

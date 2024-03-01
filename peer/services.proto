@@ -5,8 +5,7 @@ service LoginService {
 }
 
 message LoginRequest {
-    string id = 1;
-    string nombre = 2;
+    string name = 2;
     string password = 3;
 }
 
@@ -24,7 +23,7 @@ service RegisterService {
 }
 
 message RegisterRequest {
-    string nombre = 1;
+    string name = 1;
     string password = 2;
 }
 
