@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+service LoginService {
+    rpc Login (LoginRequest) returns (LoginResponse);
+}
+
+message LoginRequest {
+    string id = 1;
+    string nombre = 2;
+    string password = 3;
+}
+
+message LoginResponse {
+    bool exitoso = 1;
+    string mensaje = 2;
+}
+
+
+
+// Definicion para el servicio de registro
+
+service RegisterService {
+    rpc Register (RegisterRequest) returns (RegisterResponse);
+}
+
+message RegisterRequest {
+    string nombre = 1;
+    string password = 2;
+}
+
+message RegisterResponse {
+    bool exitoso = 1;
+    string mensaje = 2;
+}
