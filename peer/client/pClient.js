@@ -18,58 +18,91 @@ const registerClient = new servicesProto.RegisterService('localhost:50051', grpc
 
 const loginClient = new servicesProto.LoginService('localhost:50051', grpc.credentials.createInsecure());
 
+const logOutClient = new servicesProto.LogOutService('localhost:50051', grpc.credentials.createInsecure());
+
 
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
 
+const setTime = 1500
+let user = { id: 0, name: '', password: '', isOpenSesion: false }
+
 function realizarAccion(opcion) {
-    if (opcion === '1') {
+    if (opcion === '1' && user.isOpenSesion === false) {
         rl.question("Enter a name: ", (name) => {
-            rl.question("Enter a password: ", (password) => {
+            rl.question("Enter a password:", (password) => {
                 const solicitud = { name: name, password: password };
                 registerClient.Register(solicitud, (error, respuesta) => {
                     if (!error) {
-                        console.log(respuesta.mensaje);
+                        console.log(`\n${respuesta.mensaje} \n`);
+                        setTimeout(mostrarMenu, setTime);
                     } else {
-                        console.error('Error:', error);
+                        console.log(`\n${error} \n`);
+                        setTimeout(mostrarMenu, setTime);
                     }
                 });
             });
         })
 
-    } else if (opcion === '2') {
+    } else if (opcion === '2' && user.isOpenSesion === false) {
         rl.question("Enter a name: ", (name) => {
             rl.question("Enter a password: ", (password) => {
                 const solicitud = { name: name, password: password };
                 loginClient.Login(solicitud, (error, respuesta) => {
                     if (!error) {
-                        console.log(respuesta.mensaje);
+                        if (respuesta.user.isOpenSesion === true) {
+                            user = respuesta.user;
+                            console.log(`\n${respuesta.mensaje} \n`);
+                            console.log(user);
+                            setTimeout(mostrarMenu, setTime);
+                        } else {
+                            console.log(`\n${respuesta.mensaje} \n`);
+                            setTimeout(mostrarMenu, setTime);
+                        }
                     } else {
-                        console.error('Error:', error);
+                        console.log(`\n${error} \n`);
+                        setTimeout(mostrarMenu, setTime);
                     }
                 });
             });
-        });
+        })
 
-        console.log("Opción de login seleccionada.");
-    } else if (opcion === '3') {
+    } else if ((opcion === '1' && user.isOpenSesion === true)) {
+        const solicitud = { id: user.id };
+        logOutClient.LogOut(solicitud, (error, respuesta) => {
+            if (!error) {
+                user = respuesta.user;
+                console.log(`\n${respuesta.mensaje} \n`);
+                user = { id: 0, name: '', password: '', isOpenSesion: false }
+                setTimeout(mostrarMenu, setTime);
+            } else {
+                console.log(`\n${error} \n`);
+                setTimeout(mostrarMenu, setTime);
+            }
+        });
+    } else if (opcion === '3' || (opcion === '2' && user.isOpenSesion === true)) {
         console.log("Saliendo...");
         rl.close();
         process.exit(0); // Termina el proceso
     } else {
         console.log("Opción inválida.");
+        mostrarMenu();
     }
 }
 
-function preguntarOpcion() {
-    rl.question("Seleccione una opción:\n1. Register\n2. Login\n3. Salir\n", (answer) => {
-        realizarAccion(answer);
-        if (answer !== '3') {
-            preguntarOpcion(); // Llamar recursivamente a preguntarOpcion si la opción no es '3'
-        }
-    });
+function mostrarMenu() {
+    if (user.id === 0) {
+        rl.question("Seleccione una opción:\n1. Register\n2. Login\n3.Salir del menu\n", (answer) => {
+            realizarAccion(answer);
+        });
+    } else if (user.id != 0 && user.isOpenSesion === true) {
+        rl.question("Seleccione una opción:\n1.Log-out\n2.Salir del menu\n", (answer) => {
+            realizarAccion(answer);
+        });
+    }
+
 }
 
-preguntarOpcion(); // Llamar a la función para iniciar el ciclo
+mostrarMenu(); // Llamar a la función para iniciar el ciclo

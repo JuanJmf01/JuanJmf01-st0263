@@ -17,13 +17,11 @@ const options = {
 };
 
 var packageDefinition = protoLoader.loadSync(PROTO_PATH, options);
-const loginProto = grpc.loadPackageDefinition(packageDefinition);
+const servicesProto = grpc.loadPackageDefinition(packageDefinition);
 
 
 function register(call, callback) {
     const { name, password } = call.request;
-    console.log(call.request)
-
     const userData = {
         name: name,
         password: password
@@ -31,9 +29,7 @@ function register(call, callback) {
 
     axios.post(`${url}/register`, userData)
         .then(response => {
-            console.log(response.data); // Respuesta del server
-            callback(null, { exitoso: true, mensaje: '¡Te has registrado exitosamente!' });
-
+            callback(null, { exitoso: true, mensaje: response.data.message });
         })
         .catch(error => {
             console.error('Error:', error);
@@ -52,9 +48,19 @@ function login(call, callback) {
 
     axios.post(`${url}/login`, userData)
         .then(response => {
-            console.log(response.data); // Respuesta del server
-            callback(null, { exitoso: true, mensaje: 'Inicio de sesión exitoso!' });
+            callback(null, { exitoso: true, mensaje: response.data.message, user: response.data.user});
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            callback(null, { exitoso: false, mensaje: 'Ups. Ha ocurrido un error :(' });
+        });
+}
 
+function logOut(call, callback) {
+    const { id } = call.request;
+    axios.post(`${url}/log_out/${id}`)
+        .then(response => {
+            callback(null, { exitoso: true, mensaje: response.data.message });
         })
         .catch(error => {
             console.error('Error:', error);
@@ -65,8 +71,9 @@ function login(call, callback) {
 
 const server = new grpc.Server();
 
-server.addService(loginProto.RegisterService.service, { Register: register });
-server.addService(loginProto.LoginService.service, { Login: login });
+server.addService(servicesProto.RegisterService.service, { Register: register });
+server.addService(servicesProto.LoginService.service, { Login: login });
+server.addService(servicesProto.LogOutService.service, { LogOut: logOut });
 
 server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
     console.log('Servidor gRPC escuchando en el puerto 50051');
