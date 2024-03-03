@@ -3,7 +3,6 @@ import socketserver
 import json
 import urllib.parse
 
-# Define el puerto en el que deseas inicializar el servidor
 PORT = 3000
 
 # Definir objeto para usuario
@@ -32,22 +31,34 @@ class User:
 users = []
 
 
-# Definir un manejador HTTP personalizado que maneje las solicitudes POST
 class MiHandler(http.server.BaseHTTPRequestHandler):
     def imprimirUser(self):
         for user in users:
             print(user)
 
     def readQueryBody(self, headers):
-        # Lee el cuerpo de la solicitud
+        """
+        The function `readQueryBody` reads the body of a request based on the content length specified
+        in the headers.
+        
+        :param headers: The `headers` parameter in the `readQueryBody` method is a dictionary containing
+        the headers of the HTTP request. It is used to extract the 'Content-Length' header value, which
+        indicates the size of the request body that needs to be read
+        """
         content_length = int(headers['Content-Length'])
         post_data = self.rfile.read(content_length)
 
-        # Decodificar el JSON recibido y retornarlo
         return json.loads(post_data.decode('utf-8'))
     
     def respondToCustomer(self, data):
-        # Responder al cliente con un mensaje de exito
+        """
+        The function `respondToCustomer` sends a success message to the client with the provided data in
+        JSON format.
+        
+        :param data: The `data` parameter in the `respondToCustomer` method is the information or message
+        that you want to send back to the customer as a response. This data will be converted to a JSON
+        string using `json.dumps(data)` before sending it back to the customer
+        """
         response = json.dumps(data)
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
@@ -56,6 +67,9 @@ class MiHandler(http.server.BaseHTTPRequestHandler):
         
 
     def handleAuthentication(self):
+        """
+        The function `handleAuthentication` checks user credentials and responds accordingly.
+        """
         user_data = self.readQueryBody(self.headers)
         foundUser = False
         for user in users:
@@ -69,6 +83,9 @@ class MiHandler(http.server.BaseHTTPRequestHandler):
 
 
     def handleLogOut(self):
+        """
+        This function logs out a user by setting their isOpenSession attribute to False.
+        """
         idUser = int(self.path.split('/')[-1])  # Último segmento de la URL
         print(idUser)
         for user in users:
@@ -76,8 +93,6 @@ class MiHandler(http.server.BaseHTTPRequestHandler):
                 user.isOpenSesion = False
                 self.respondToCustomer({"message": "Session closed successfully"})
     
-
-
     def do_POST(self):
         if self.command == 'POST':
             if self.path == '/register':
@@ -105,11 +120,6 @@ class MiHandler(http.server.BaseHTTPRequestHandler):
             elif self.path.startswith('/log_out/'):
                 self.handleLogOut()
                 self.imprimirUser()
-            # elif self.path == '/index':
-            #     print("SI ENTRAA")
-            #     self.handleFileInsertion()
-            #     self.imprimirUser()
-
             else:
                 self.send_response(404)
                 self.end_headers()
@@ -134,7 +144,7 @@ class MiHandler(http.server.BaseHTTPRequestHandler):
                     "ports": ports
                 }
                 
-                # Convierte el objeto JSON a una cadena y envía la respuesta al cliente
+                # Convertir el objeto JSON a una cadena y envia la respuesta al cliente
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
@@ -142,8 +152,9 @@ class MiHandler(http.server.BaseHTTPRequestHandler):
 
 
 
+# The code block you provided is configuring and starting a TCP server using Python's `socketserver`
+# module. Here's a breakdown of what each part does:
 # Configurar el servidor un puerto
 with socketserver.TCPServer(("", PORT), MiHandler) as httpd:
     print("Servidor iniciado en el puerto", PORT)
-    # Iniciar el servidor
     httpd.serve_forever()

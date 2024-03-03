@@ -17,6 +17,7 @@ const servicesProto = grpc.loadPackageDefinition(packageDefinition);
 const portC = process.argv[2]; // Obtener el puerto del argumento de línea de comandos
 const serverAddress = `localhost:${portC}`;
 
+/* The code snippet you provided is creating gRPC client instances for different services defined in your protocol buffer file (`services.proto`). Here's what each client is doing: */
 const registerClient = new servicesProto.RegisterService(serverAddress, grpc.credentials.createInsecure());
 const loginClient = new servicesProto.LoginService(serverAddress, grpc.credentials.createInsecure());
 const logOutClient = new servicesProto.LogOutService(serverAddress, grpc.credentials.createInsecure());
@@ -84,6 +85,10 @@ function realizarAccion(opcion) {
 
 }
 
+/**
+ * The function "mostrarMenu" displays different menu options based on the user's ID and session
+ * status.
+ */
 function mostrarMenu() {
     if (user.id === 0) {
         rl.question("Seleccione una opción:\n1. Register\n2. Login\n3.Salir del menu\n", (answer) => {
@@ -94,9 +99,17 @@ function mostrarMenu() {
             realizarAccion(answer);
         });
     }
-
 }
 
+/**
+ * The `register` function takes a name and password, sends a registration request to a client, and
+ * handles the response accordingly.
+ * @param name - The `name` parameter in the `register` function is the name of the user who is
+ * registering. It is a string value that represents the name of the user.
+ * @param password - The `password` parameter in the `register` function is used to store the password
+ * provided by the user during the registration process. It is passed as an argument to the function
+ * along with the `name` parameter, which stores the user's name.
+ */
 function register(name, password) {
     const solicitud = { name: name, password: password };
     registerClient.Register(solicitud, (error, respuesta) => {
@@ -110,6 +123,16 @@ function register(name, password) {
     });
 }
 
+/**
+ * The function `login` takes a name and password, sends a login request, and handles the response
+ * accordingly.
+ * @param name - The `name` parameter in the `login` function is typically the username or email
+ * entered by the user trying to log in. It is used to identify the user and authenticate them.
+ * @param password - It seems like you might have missed providing the value for the `password`
+ * parameter in the `login` function. The `password` parameter is required for the function to
+ * authenticate the user. You should pass the user's password as an argument when calling the `login`
+ * function.
+ */
 function login(name, password) {
     const solicitud = { name: name, password: password };
     loginClient.Login(solicitud, (error, respuesta) => {
@@ -130,6 +153,10 @@ function login(name, password) {
     });
 }
 
+/**
+ * The `logOut` function logs out the user by sending a request to the server and updating the user
+ * information accordingly.
+ */
 function logOut() {
     const solicitud = { id: user.id };
     logOutClient.LogOut(solicitud, (error, respuesta) => {
@@ -145,6 +172,12 @@ function logOut() {
     });
 }
 
+/**
+ * The function `saveFiles` saves files using a client-side method and displays a message based on the
+ * response.
+ * @param files - The `files` parameter in the `saveFiles` function is an array that contains the files
+ * to be saved. Each element in the array represents a file that needs to be saved.
+ */
 function saveFiles(files) {
     const solicitud = { files: files };
     saveFilesClient.SaveFiles(solicitud, (error, respuesta) => {
@@ -158,6 +191,13 @@ function saveFiles(files) {
     });
 }
 
+/**
+ * The function `getFiles` makes a gRPC call to a service to retrieve files based on a user ID and
+ * handles the response accordingly.
+ * @param port - The `port` parameter in the `getFiles` function is used to specify the port number on
+ * which the gRPC server is running. This port number is needed to establish a connection with the
+ * server and make requests to retrieve files.
+ */
 function getFiles(port) {
     console.log(port)
     const getFilesClient = new servicesProto.GetFilesService(`localhost:${port}`, grpc.credentials.createInsecure());
@@ -176,6 +216,10 @@ function getFiles(port) {
     });
 }
 
+/**
+ * The function "generarArchivosAleatorios" generates an array of random file names.
+ * @returns An array containing the names of two randomly generated files.
+ */
 function generarArchivosAleatorios() {
     files = []
     for (let i = 0; i < 2; i++) {
