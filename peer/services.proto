@@ -1,4 +1,6 @@
 syntax = "proto3";
+import "google/protobuf/empty.proto";
+
 
 service LoginService {
     rpc Login (LoginRequest) returns (LoginResponse);
@@ -20,7 +22,6 @@ message LoginResponse {
     bool exitoso = 1;
     string mensaje = 2;
     User user = 3;
-
 }
 
 
@@ -55,4 +56,53 @@ message LogOutRequest {
 message LogOutResponse {
     bool exitoso = 1;
     string mensaje = 2;
+}
+
+
+// Definicion para el servicio de insersion
+
+service SaveFilesService {
+    rpc SaveFiles (SaveFilesRequest) returns (SaveFilesResponse);
+}
+
+message SaveFilesRequest {
+    repeated string files = 1;
+}
+
+message SaveFilesResponse {
+    bool exitoso = 1;
+    string mensaje = 2;
+}
+
+
+// Definicion para el servicio de busqueda de puertos
+
+service GetPortsService {
+    rpc GetPorts (GetPortsRequest) returns (GetPortsResponse);
+}
+
+message GetPortsRequest {
+    int32 id = 1;
+}
+
+message GetPortsResponse {
+    bool exitoso = 1;
+    string mensaje = 2;
+    repeated string ports = 3;
+}
+
+
+// Definicion para el servicio de busqueda de archivos
+
+service GetFilesService {
+    rpc GetFiles (GetFilesRequest) returns (GetFilesResponse);
+}
+
+message GetFilesRequest {
+    int32 id = 1;
+}
+
+message GetFilesResponse {
+    string mensaje = 1;
+    repeated string files = 2;
 }

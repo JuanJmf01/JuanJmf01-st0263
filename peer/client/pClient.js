@@ -14,11 +14,14 @@ const options = {
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, options);
 const servicesProto = grpc.loadPackageDefinition(packageDefinition);
 
-const registerClient = new servicesProto.RegisterService('localhost:50051', grpc.credentials.createInsecure());
+const port = process.argv[2]; // Obtener el puerto del argumento de línea de comandos
+const serverAddress = `localhost:${port}`;
 
-const loginClient = new servicesProto.LoginService('localhost:50051', grpc.credentials.createInsecure());
-
-const logOutClient = new servicesProto.LogOutService('localhost:50051', grpc.credentials.createInsecure());
+const registerClient = new servicesProto.RegisterService(serverAddress, grpc.credentials.createInsecure());
+const loginClient = new servicesProto.LoginService(serverAddress, grpc.credentials.createInsecure());
+const logOutClient = new servicesProto.LogOutService(serverAddress, grpc.credentials.createInsecure());
+const saveFilesClient = new servicesProto.SaveFilesService(serverAddress, grpc.credentials.createInsecure());
+const getPortsClient = new servicesProto.GetPortsService(serverAddress, grpc.credentials.createInsecure());
 
 
 const rl = readline.createInterface({
@@ -82,7 +85,66 @@ function realizarAccion(opcion) {
                 setTimeout(mostrarMenu, setTime);
             }
         });
-    } else if (opcion === '3' || (opcion === '2' && user.isOpenSesion === true)) {
+    } else if (opcion === '2' && user.isOpenSesion === true) {
+        const files = [];
+
+        for (let i = 0; i < 2; i++) {
+            const numeroAleatorio = Math.floor(Math.random() * 501); // Generar un numero aleatorio entre 0 y 500
+            const nombreArchivo = `archivo${numeroAleatorio}`;
+            files.push(nombreArchivo);
+        }
+
+        const solicitud = { files: files };
+        saveFilesClient.SaveFiles(solicitud, (error, respuesta) => {
+            if (!error) {
+                console.log(`\n${respuesta.mensaje} \n`);
+                setTimeout(mostrarMenu, setTime);
+            } else {
+                console.log(`\n${error} \n`);
+                setTimeout(mostrarMenu, setTime);
+            }
+        });
+
+    } else if (opcion === '3' && user.isOpenSesion === true) {
+        const solicitud = { id: user.id };
+        getPortsClient.GetPorts(solicitud, (error, respuesta) => {
+            if (!error) {
+                const ports = respuesta.ports;
+                console.log(ports)
+                console.log(`\n${respuesta.mensaje} \n`);
+                for (let i = 0; i < ports.length; i++) {
+                    let port = parseInt(ports[i])
+                    console.log(port)
+
+                }
+                // for (let i = 0; i < ports.length; i++) {
+                    // let port = parseInt(ports[i])
+
+                    const getFilesClient = new servicesProto.GetFilesService('localhost:50051', grpc.credentials.createInsecure());
+                    const solicitud = { id: user.id };
+
+                    getFilesClient.GetFiles(solicitud, (error, respuesta) => {
+                        if (!error) {
+                            const files = respuesta.files;
+                            console.log(`\n respondser: ${respuesta.mensaje} \n`);
+                            console.log(`\n Files: ${files} \n`);
+                            setTimeout(mostrarMenu, setTime);
+                        } else {
+                            console.log(`\n${error} \n`);
+                            setTimeout(mostrarMenu, setTime);
+                        }
+                    });
+                    
+
+                // }
+                setTimeout(mostrarMenu, setTime);
+            } else {
+                console.log(`\n${error} \n`);
+                setTimeout(mostrarMenu, setTime);
+            }
+        });
+
+    } else if (opcion === '3' || (opcion === '4' && user.isOpenSesion === true)) {
         console.log("Saliendo...");
         rl.close();
         process.exit(0); // Termina el proceso
@@ -90,6 +152,7 @@ function realizarAccion(opcion) {
         console.log("Opción inválida.");
         mostrarMenu();
     }
+
 }
 
 function mostrarMenu() {
@@ -98,7 +161,7 @@ function mostrarMenu() {
             realizarAccion(answer);
         });
     } else if (user.id != 0 && user.isOpenSesion === true) {
-        rl.question("Seleccione una opción:\n1.Log-out\n2.Salir del menu\n", (answer) => {
+        rl.question("Seleccione una opción:\n1.Log-out\n2. insertar archivos\n3.searh files \n4.Salir del menu\n", (answer) => {
             realizarAccion(answer);
         });
     }
