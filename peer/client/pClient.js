@@ -14,8 +14,8 @@ const options = {
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, options);
 const servicesProto = grpc.loadPackageDefinition(packageDefinition);
 
-const port = process.argv[2]; // Obtener el puerto del argumento de línea de comandos
-const serverAddress = `localhost:${port}`;
+const portC = process.argv[2]; // Obtener el puerto del argumento de línea de comandos
+const serverAddress = `localhost:${portC}`;
 
 const registerClient = new servicesProto.RegisterService(serverAddress, grpc.credentials.createInsecure());
 const loginClient = new servicesProto.LoginService(serverAddress, grpc.credentials.createInsecure());
@@ -116,17 +116,13 @@ function realizarAccion(opcion) {
                     let port = parseInt(ports[i])
                     console.log(port)
 
-                }
-                // for (let i = 0; i < ports.length; i++) {
-                    // let port = parseInt(ports[i])
-
-                    const getFilesClient = new servicesProto.GetFilesService('localhost:50051', grpc.credentials.createInsecure());
+                    const getFilesClient = new servicesProto.GetFilesService(`localhost:${port}`, grpc.credentials.createInsecure());
                     const solicitud = { id: user.id };
 
                     getFilesClient.GetFiles(solicitud, (error, respuesta) => {
                         if (!error) {
                             const files = respuesta.files;
-                            console.log(`\n respondser: ${respuesta.mensaje} \n`);
+                            console.log(`\n ${respuesta.mensaje} \n`);
                             console.log(`\n Files: ${files} \n`);
                             setTimeout(mostrarMenu, setTime);
                         } else {
@@ -134,9 +130,7 @@ function realizarAccion(opcion) {
                             setTimeout(mostrarMenu, setTime);
                         }
                     });
-                    
-
-                // }
+                }
                 setTimeout(mostrarMenu, setTime);
             } else {
                 console.log(`\n${error} \n`);
