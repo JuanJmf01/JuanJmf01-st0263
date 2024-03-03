@@ -1,5 +1,4 @@
 syntax = "proto3";
-import "google/protobuf/empty.proto";
 
 
 service LoginService {
@@ -59,7 +58,7 @@ message LogOutResponse {
 }
 
 
-// Definicion para el servicio de insersion
+// Definicion para el servicio de guardar archivos
 
 service SaveFilesService {
     rpc SaveFiles (SaveFilesRequest) returns (SaveFilesResponse);

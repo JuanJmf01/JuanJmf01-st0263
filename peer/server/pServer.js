@@ -3,7 +3,7 @@ const PROTO_PATH = "../services.proto";
 var protoLoader = require("@grpc/proto-loader");
 
 const axios = require('axios');
-const net = require('net'); // Módulo para comprobar la disponibilidad del puerto
+
 
 
 //Url del servidor en python
@@ -21,7 +21,7 @@ const options = {
 var packageDefinition = protoLoader.loadSync(PROTO_PATH, options);
 const servicesProto = grpc.loadPackageDefinition(packageDefinition);
 
-let startingPort = 50051; // Puerto inicial
+let startingPort = 50051; // Puerto inicial, puede cambair si ya esta en uso
 
 let userFiles = []
 
@@ -55,6 +55,7 @@ function login(call, callback) {
 
     axios.post(`${url}/login`, userData)
         .then(response => {
+            console.log(response.data.message)
             callback(null, { exitoso: true, mensaje: response.data.message, user: response.data.user });
         })
         .catch(error => {
@@ -69,6 +70,7 @@ function logOut(call, callback) {
     axios.post(`${url}/log_out/${id}`)
         .then(response => {
             callback(null, { exitoso: true, mensaje: response.data.message });
+            console.log(response.data.message)
         })
         .catch(error => {
             console.error('Error:', error);
@@ -82,9 +84,7 @@ function saveFiles(call, callback) {
 
     userFiles.push(...files)
     callback(null, { exitoso: true, mensaje: "Files inserted successfully" });
-    console.log(`userFiles  ${userFiles}`)
-
-
+    console.log(`userFiles received   ${userFiles}`)
 }
 
 
@@ -104,8 +104,8 @@ function getPorts(call, callback) {
 
 
 function getFiles(call, callback) {
-    console.log(`userFiles  ${userFiles}`)
-    callback(null, { exitoso: true, mensaje: "files sent successfully", files: userFiles });
+    console.log(`userFiles to send  ${userFiles}`)
+    callback(null, { mensaje: "files received successfully", files: userFiles });
 }
 
 function startServer(port) {

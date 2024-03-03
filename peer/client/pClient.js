@@ -33,79 +33,28 @@ const setTime = 1500
 let user = { id: 0, name: '', password: '', isOpenSesion: false }
 
 function realizarAccion(opcion) {
-    if (opcion === '1' && user.isOpenSesion === false) {
+    if (opcion === '1' && user.isOpenSesion === false) { //Register
         rl.question("Enter a name: ", (name) => {
             rl.question("Enter a password:", (password) => {
-                const solicitud = { name: name, password: password };
-                registerClient.Register(solicitud, (error, respuesta) => {
-                    if (!error) {
-                        console.log(`\n${respuesta.mensaje} \n`);
-                        setTimeout(mostrarMenu, setTime);
-                    } else {
-                        console.log(`\n${error} \n`);
-                        setTimeout(mostrarMenu, setTime);
-                    }
-                });
+                register(name, password)
             });
         })
 
-    } else if (opcion === '2' && user.isOpenSesion === false) {
+    } else if (opcion === '2' && user.isOpenSesion === false) { //Login
         rl.question("Enter a name: ", (name) => {
             rl.question("Enter a password: ", (password) => {
-                const solicitud = { name: name, password: password };
-                loginClient.Login(solicitud, (error, respuesta) => {
-                    if (!error) {
-                        if (respuesta.user.isOpenSesion === true) {
-                            user = respuesta.user;
-                            console.log(`\n${respuesta.mensaje} \n`);
-                            console.log(user);
-                            setTimeout(mostrarMenu, setTime);
-                        } else {
-                            console.log(`\n${respuesta.mensaje} \n`);
-                            setTimeout(mostrarMenu, setTime);
-                        }
-                    } else {
-                        console.log(`\n${error} \n`);
-                        setTimeout(mostrarMenu, setTime);
-                    }
-                });
+                login(name, password)
             });
         })
 
-    } else if ((opcion === '1' && user.isOpenSesion === true)) {
-        const solicitud = { id: user.id };
-        logOutClient.LogOut(solicitud, (error, respuesta) => {
-            if (!error) {
-                user = respuesta.user;
-                console.log(`\n${respuesta.mensaje} \n`);
-                user = { id: 0, name: '', password: '', isOpenSesion: false }
-                setTimeout(mostrarMenu, setTime);
-            } else {
-                console.log(`\n${error} \n`);
-                setTimeout(mostrarMenu, setTime);
-            }
-        });
-    } else if (opcion === '2' && user.isOpenSesion === true) {
-        const files = [];
+    } else if ((opcion === '1' && user.isOpenSesion === true)) { //Log-out
+        logOut()
+    } else if (opcion === '2' && user.isOpenSesion === true) { // Save files
+        const files = generarArchivosAleatorios()
 
-        for (let i = 0; i < 2; i++) {
-            const numeroAleatorio = Math.floor(Math.random() * 501); // Generar un numero aleatorio entre 0 y 500
-            const nombreArchivo = `archivo${numeroAleatorio}`;
-            files.push(nombreArchivo);
-        }
+        saveFiles(files)
 
-        const solicitud = { files: files };
-        saveFilesClient.SaveFiles(solicitud, (error, respuesta) => {
-            if (!error) {
-                console.log(`\n${respuesta.mensaje} \n`);
-                setTimeout(mostrarMenu, setTime);
-            } else {
-                console.log(`\n${error} \n`);
-                setTimeout(mostrarMenu, setTime);
-            }
-        });
-
-    } else if (opcion === '3' && user.isOpenSesion === true) {
+    } else if (opcion === '3' && user.isOpenSesion === true) {  //Get files other peer
         const solicitud = { id: user.id };
         getPortsClient.GetPorts(solicitud, (error, respuesta) => {
             if (!error) {
@@ -114,22 +63,8 @@ function realizarAccion(opcion) {
                 console.log(`\n${respuesta.mensaje} \n`);
                 for (let i = 0; i < ports.length; i++) {
                     let port = parseInt(ports[i])
-                    console.log(port)
+                    getFiles(port)
 
-                    const getFilesClient = new servicesProto.GetFilesService(`localhost:${port}`, grpc.credentials.createInsecure());
-                    const solicitud = { id: user.id };
-
-                    getFilesClient.GetFiles(solicitud, (error, respuesta) => {
-                        if (!error) {
-                            const files = respuesta.files;
-                            console.log(`\n ${respuesta.mensaje} \n`);
-                            console.log(`\n Files: ${files} \n`);
-                            setTimeout(mostrarMenu, setTime);
-                        } else {
-                            console.log(`\n${error} \n`);
-                            setTimeout(mostrarMenu, setTime);
-                        }
-                    });
                 }
                 setTimeout(mostrarMenu, setTime);
             } else {
@@ -160,6 +95,95 @@ function mostrarMenu() {
         });
     }
 
+}
+
+function register(name, password) {
+    const solicitud = { name: name, password: password };
+    registerClient.Register(solicitud, (error, respuesta) => {
+        if (!error) {
+            console.log(`\n${respuesta.mensaje} \n`);
+            setTimeout(mostrarMenu, setTime);
+        } else {
+            console.log(`\n${error} \n`);
+            setTimeout(mostrarMenu, setTime);
+        }
+    });
+}
+
+function login(name, password) {
+    const solicitud = { name: name, password: password };
+    loginClient.Login(solicitud, (error, respuesta) => {
+        if (!error) {
+            if (respuesta.user.isOpenSesion === true) {
+                user = respuesta.user;
+                console.log(`\n${respuesta.mensaje} \n`);
+                console.log(user);
+                setTimeout(mostrarMenu, setTime);
+            } else {
+                console.log(`\n${respuesta.mensaje} \n`);
+                setTimeout(mostrarMenu, setTime);
+            }
+        } else {
+            console.log(`\n${error} \n`);
+            setTimeout(mostrarMenu, setTime);
+        }
+    });
+}
+
+function logOut() {
+    const solicitud = { id: user.id };
+    logOutClient.LogOut(solicitud, (error, respuesta) => {
+        if (!error) {
+            user = respuesta.user;
+            console.log(`\n${respuesta.mensaje} \n`);
+            user = { id: 0, name: '', password: '', isOpenSesion: false }
+            setTimeout(mostrarMenu, setTime);
+        } else {
+            console.log(`\n${error} \n`);
+            setTimeout(mostrarMenu, setTime);
+        }
+    });
+}
+
+function saveFiles(files) {
+    const solicitud = { files: files };
+    saveFilesClient.SaveFiles(solicitud, (error, respuesta) => {
+        if (!error) {
+            console.log(`\n${respuesta.mensaje} \n`);
+            setTimeout(mostrarMenu, setTime);
+        } else {
+            console.log(`\n${error} \n`);
+            setTimeout(mostrarMenu, setTime);
+        }
+    });
+}
+
+function getFiles(port) {
+    console.log(port)
+    const getFilesClient = new servicesProto.GetFilesService(`localhost:${port}`, grpc.credentials.createInsecure());
+    const solicitud = { id: user.id };
+
+    getFilesClient.GetFiles(solicitud, (error, respuesta) => {
+        if (!error) {
+            const files = respuesta.files;
+            console.log(`\n ${respuesta.mensaje} \n`);
+            console.log(`\n Files: ${files} \n`);
+            setTimeout(mostrarMenu, setTime);
+        } else {
+            console.log(`\n${error} \n`);
+            setTimeout(mostrarMenu, setTime);
+        }
+    });
+}
+
+function generarArchivosAleatorios() {
+    files = []
+    for (let i = 0; i < 2; i++) {
+        const numeroAleatorio = Math.floor(Math.random() * 501); // Generar un numero aleatorio entre 0 y 500
+        const nombreArchivo = `archivo${numeroAleatorio}`;
+        files.push(nombreArchivo);
+    }
+    return files
 }
 
 mostrarMenu(); // Llamar a la función para iniciar el ciclo
